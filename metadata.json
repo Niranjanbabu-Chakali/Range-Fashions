@@ -1,0 +1,6 @@
+{
+  "name": "RANGE",
+  "description": "RANGE - Wear the Range. Premium e-commerce fashion application for Men, Kids, and Footwear with modern design, product filtering, shopping cart, wishlist, and local storage checkout.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
