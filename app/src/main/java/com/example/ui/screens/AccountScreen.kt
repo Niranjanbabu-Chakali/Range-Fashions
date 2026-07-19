@@ -139,6 +139,7 @@ fun AccountScreen(
                 if (ord != null) {
                     OrderDetailPanel(
                         order = ord,
+                        navController = navController,
                         onBack = { selectedOrderDetailId = null },
                         onCancel = {
                             viewModel.cancelOrder(ord.id)
@@ -149,9 +150,9 @@ fun AccountScreen(
             } else {
                 when (activeTab) {
                     "Profile" -> ProfilePanel(profile, viewModel, onShowSnackbar)
-                    "My Orders" -> OrdersPanel(orders, onSelectOrder = { selectedOrderDetailId = it })
+                    "My Orders" -> OrdersPanel(orders, navController, onSelectOrder = { selectedOrderDetailId = it })
                     "Addresses" -> AddressesPanel(addresses, viewModel, onShowSnackbar)
-                    "Support" -> SupportPanel(onShowSnackbar)
+                    "Support" -> SupportPanel(navController, onShowSnackbar)
                 }
             }
         }
@@ -221,6 +222,7 @@ fun ProfilePanel(
 @Composable
 fun OrdersPanel(
     orders: List<Order>,
+    navController: NavController,
     onSelectOrder: (String) -> Unit
 ) {
     if (orders.isEmpty()) {
@@ -235,6 +237,16 @@ fun OrdersPanel(
             Spacer(modifier = Modifier.height(12.dp))
             Text("No orders placed yet", fontWeight = FontWeight.Bold, color = BrandBlack, fontSize = 14.sp)
             Text("Your purchase history will appear here.", color = Color.Gray, fontSize = 11.sp, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { navController.navigate("order_tracking") },
+                colors = ButtonDefaults.buttonColors(containerColor = BrandBlack),
+                shape = RoundedCornerShape(0.dp)
+            ) {
+                Icon(imageVector = Icons.Default.LocalShipping, contentDescription = null, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("TRACK AN ORDER LIVE", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
         }
         return
     }
@@ -245,6 +257,31 @@ fun OrdersPanel(
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        // Quick track option at the top of orders list
+        Card(
+            colors = CardDefaults.cardColors(containerColor = BrandWhite),
+            shape = RoundedCornerShape(4.dp),
+            border = BorderStroke(1.dp, BrandBorderGrey),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { navController.navigate("order_tracking") }
+        ) {
+            Row(
+                modifier = Modifier.padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Default.LocalShipping, contentDescription = null, tint = BrandDarkNavy, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text("TRACK SHIPMENT LIVE", fontWeight = FontWeight.ExtraBold, fontSize = 11.sp, color = BrandBlack)
+                        Text("Enter an Order ID to check real-time package milestones", fontSize = 9.sp, color = Color.Gray)
+                    }
+                }
+                Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+            }
+        }
         orders.forEach { order ->
             Card(
                 colors = CardDefaults.cardColors(containerColor = BrandWhite),
@@ -366,6 +403,7 @@ fun TimelineProgress(status: String) {
 @Composable
 fun OrderDetailPanel(
     order: Order,
+    navController: NavController,
     onBack: () -> Unit,
     onCancel: () -> Unit
 ) {
@@ -395,6 +433,23 @@ fun OrderDetailPanel(
 
         // Visual Status
         TimelineProgress(order.orderStatus)
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Direct track package button
+        if (order.orderStatus != "Cancelled") {
+            Button(
+                onClick = { navController.navigate("order_tracking?orderId=${order.orderId}") },
+                colors = ButtonDefaults.buttonColors(containerColor = BrandDarkNavy),
+                shape = RoundedCornerShape(0.dp),
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(vertical = 4.dp)
+            ) {
+                Icon(imageVector = Icons.Default.LocalShipping, contentDescription = null, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("TRACK LIVE TRANSIT", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -649,7 +704,10 @@ fun AddressesPanel(
 
 // 4. CUSTOMER SUPPORT SUB-PANEL (Policies, Accordion, Support Forms)
 @Composable
-fun SupportPanel(onShowSnackbar: (String) -> Unit) {
+fun SupportPanel(
+    navController: NavController,
+    onShowSnackbar: (String) -> Unit
+) {
     var queryName by remember { mutableStateOf("") }
     var queryEmail by remember { mutableStateOf("") }
     var queryMsg by remember { mutableStateOf("") }
@@ -671,6 +729,9 @@ fun SupportPanel(onShowSnackbar: (String) -> Unit) {
             SupportMenuRow("About RANGE brand story", Icons.Default.History) { selectedSection = "About" }
             SupportMenuRow("Frequently Asked Questions", Icons.Default.Quiz) { selectedSection = "FAQ" }
             SupportMenuRow("Shipping & Return policies", Icons.Default.LocalShipping) { selectedSection = "Policies" }
+            SupportMenuRow("Track your package status live", Icons.Default.TrackChanges) {
+                navController.navigate("order_tracking")
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

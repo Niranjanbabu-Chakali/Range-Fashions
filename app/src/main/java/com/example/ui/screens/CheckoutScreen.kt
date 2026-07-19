@@ -746,6 +746,21 @@ fun OrderSuccessPage(
 
         // CTAs
         Button(
+            onClick = { navController.navigate("order_tracking?orderId=${orderId}") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = BrandDarkNavy),
+            shape = RoundedCornerShape(0.dp)
+        ) {
+            Icon(imageVector = Icons.Default.LocalShipping, contentDescription = null, tint = BrandWhite, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("TRACK SHIPMENT LIVE", fontWeight = FontWeight.ExtraBold, fontSize = 12.sp, letterSpacing = 1.sp)
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Button(
             onClick = { navController.navigate("home") },
             modifier = Modifier
                 .fillMaxWidth()

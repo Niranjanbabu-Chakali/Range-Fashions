@@ -136,6 +136,7 @@ class Repository(private val db: AppDatabase) {
     // Orders
     fun getOrders(): Flow<List<Order>> = orderDao.getOrders()
     fun getOrderById(id: Int): Flow<Order?> = orderDao.getOrderById(id)
+    fun getOrderByStringId(orderId: String): Flow<Order?> = orderDao.getOrderByStringId(orderId)
     suspend fun placeOrder(order: Order): Long {
         return withContext(Dispatchers.IO) {
             orderDao.insertOrder(order)
@@ -160,6 +161,13 @@ class Repository(private val db: AppDatabase) {
     suspend fun addReview(review: Review) {
         withContext(Dispatchers.IO) {
             reviewDao.insertReview(review)
+            val reviews = reviewDao.getReviewsForProductDirect(review.productId)
+            if (reviews.isNotEmpty()) {
+                val average = reviews.map { it.rating }.average()
+                val count = reviews.size
+                val roundedAverage = Math.round(average * 10.0) / 10.0
+                productDao.updateProductRating(review.productId, roundedAverage, count)
+            }
         }
     }
 

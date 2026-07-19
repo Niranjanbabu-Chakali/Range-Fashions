@@ -16,6 +16,9 @@ interface ProductDao {
 
     @Query("SELECT COUNT(*) FROM products")
     suspend fun getProductCount(): Int
+
+    @Query("UPDATE products SET averageRating = :averageRating, ratingCount = :ratingCount WHERE id = :id")
+    suspend fun updateProductRating(id: Int, averageRating: Double, ratingCount: Int)
 }
 
 @Dao
@@ -83,6 +86,9 @@ interface OrderDao {
     @Query("SELECT * FROM orders WHERE id = :id")
     fun getOrderById(id: Int): Flow<Order?>
 
+    @Query("SELECT * FROM orders WHERE orderId = :orderId LIMIT 1")
+    fun getOrderByStringId(orderId: String): Flow<Order?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrder(order: Order): Long
 
@@ -106,6 +112,9 @@ interface CouponDao {
 interface ReviewDao {
     @Query("SELECT * FROM reviews WHERE productId = :productId ORDER BY reviewDate DESC")
     fun getReviewsForProduct(productId: Int): Flow<List<Review>>
+
+    @Query("SELECT * FROM reviews WHERE productId = :productId")
+    suspend fun getReviewsForProductDirect(productId: Int): List<Review>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReview(review: Review)

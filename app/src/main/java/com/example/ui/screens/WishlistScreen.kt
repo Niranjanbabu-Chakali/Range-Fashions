@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import kotlinx.coroutines.delay
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -44,7 +46,15 @@ fun WishlistScreen(
         products.filter { ids.contains(it.id) }
     }
 
-    if (wishlistedProducts.isEmpty()) {
+    var isScreenLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(1000)
+        isScreenLoading = false
+    }
+
+    if (isScreenLoading) {
+        WishlistScreenSkeleton()
+    } else if (wishlistedProducts.isEmpty()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

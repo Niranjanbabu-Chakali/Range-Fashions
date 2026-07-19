@@ -235,6 +235,8 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
         }
     }
 
+    fun getOrderByStringId(orderId: String): Flow<Order?> = repository.getOrderByStringId(orderId)
+
     // Reviews
     fun getReviewsForProduct(productId: Int): Flow<List<Review>> = repository.getReviewsForProduct(productId)
     

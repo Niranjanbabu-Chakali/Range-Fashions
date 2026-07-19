@@ -562,27 +562,44 @@ fun ProductDetailScreen(
                 }
 
                 // Bar breakdown
+                val ratingCounts = remember(reviewsList) {
+                    val counts = mutableMapOf(5 to 0, 4 to 0, 3 to 0, 2 to 0, 1 to 0)
+                    reviewsList.forEach { r ->
+                        counts[r.rating] = (counts[r.rating] ?: 0) + 1
+                    }
+                    counts
+                }
+                val totalReviews = remember(reviewsList) { reviewsList.size.coerceAtLeast(1) }
+
                 Column(modifier = Modifier.weight(1f)) {
-                    RatingBarRow(5, 60)
-                    RatingBarRow(4, 20)
-                    RatingBarRow(3, 10)
-                    RatingBarRow(2, 5)
-                    RatingBarRow(1, 5)
+                    val count5 = ratingCounts[5] ?: 0
+                    val count4 = ratingCounts[4] ?: 0
+                    val count3 = ratingCounts[3] ?: 0
+                    val count2 = ratingCounts[2] ?: 0
+                    val count1 = ratingCounts[1] ?: 0
+
+                    RatingBarRow(5, ((count5.toFloat() / totalReviews) * 100).toInt())
+                    RatingBarRow(4, ((count4.toFloat() / totalReviews) * 100).toInt())
+                    RatingBarRow(3, ((count3.toFloat() / totalReviews) * 100).toInt())
+                    RatingBarRow(2, ((count2.toFloat() / totalReviews) * 100).toInt())
+                    RatingBarRow(1, ((count1.toFloat() / totalReviews) * 100).toInt())
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
+            OutlinedButton(
                 onClick = { showReviewDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp),
+                    .height(48.dp),
                 shape = RoundedCornerShape(0.dp),
                 border = BorderStroke(1.dp, BrandBlack),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = BrandBlack)
             ) {
-                Text("WRITE A REVIEW", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Icon(imageVector = Icons.Default.RateReview, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("WRITE A PRODUCT REVIEW", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -880,36 +897,69 @@ fun RatingBarRow(stars: Int, percentage: Int) {
 
 @Composable
 fun ReviewItem(review: Review) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Avatar circle with first letter of user's name
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(BrandLightGrey),
+            contentAlignment = Alignment.Center
         ) {
-            Text(review.userName, fontWeight = FontWeight.Bold, color = BrandBlack, fontSize = 12.sp)
+            Text(
+                text = review.userName.firstOrNull()?.toString()?.uppercase() ?: "U",
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 14.sp,
+                color = BrandDarkNavy
+            )
+        }
 
-            // Star Rating row
-            Row {
-                repeat(5) { i ->
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = if (i < review.rating) Color(0xFFFFB300) else Color.LightGray,
-                        modifier = Modifier.size(11.dp)
-                    )
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = review.userName,
+                    fontWeight = FontWeight.Bold,
+                    color = BrandBlack,
+                    fontSize = 12.sp
+                )
+
+                // Star Rating row
+                Row(horizontalArrangement = Arrangement.spacedBy(1.dp)) {
+                    repeat(5) { i ->
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (i < review.rating) Color(0xFFFFB300) else Color.LightGray,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
                 }
             }
+
+            // Date
+            val formattedDate = remember(review.reviewDate) {
+                val sdf = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
+                sdf.format(java.util.Date(review.reviewDate))
+            }
+            Text(formattedDate, color = Color.Gray, fontSize = 9.sp, modifier = Modifier.padding(top = 1.dp))
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = review.text,
+                color = Color.DarkGray,
+                fontSize = 11.5.sp,
+                lineHeight = 15.sp
+            )
         }
-
-        // Date
-        val formattedDate = remember(review.reviewDate) {
-            val sdf = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
-            sdf.format(java.util.Date(review.reviewDate))
-        }
-        Text(formattedDate, color = Color.Gray, fontSize = 9.sp)
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(review.text, color = Color.DarkGray, fontSize = 11.sp, lineHeight = 14.sp)
     }
 }

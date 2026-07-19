@@ -49,70 +49,80 @@ fun HomeScreen(
     val cartItems by viewModel.cartItems.collectAsStateWithLifecycle()
     val wishlistItems by viewModel.wishlistItems.collectAsStateWithLifecycle()
 
-    val scrollState = rememberScrollState()
+    var isScreenLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(1000)
+        isScreenLoading = false
+    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(scrollState)
-    ) {
-        // 1. Announcement Bar
-        AnnouncementBar()
+    if (isScreenLoading) {
+        HomeScreenSkeleton()
+    } else {
+        val scrollState = rememberScrollState()
 
-        // 2. Main Hero Banner Slider
-        HeroBannerSlider(navController)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(scrollState)
+        ) {
+            // 1. Announcement Bar
+            AnnouncementBar()
 
-        // 3. Shop By Category
-        CategoryCardsSection(navController)
+            // 2. Main Hero Banner Slider
+            HeroBannerSlider(navController)
 
-        // 4. Deal of the Day (With live ticking countdown and claims progress bar)
-        DealOfTheDaySection(products, navController)
+            // 3. Shop By Category
+            CategoryCardsSection(navController)
 
-        // 5. Trending Products
-        ProductsGridSection(
-            title = "Trending Now",
-            products = products.filter { it.isFeatured }.take(8),
-            wishlistItems = wishlistItems.map { it.productId },
-            navController = navController,
-            onToggleWishlist = { viewModel.toggleWishlist(it) },
-            onAddToCart = { p ->
-                val size = p.getSizesList().firstOrNull()?.first ?: "M"
-                val color = p.getColorsList().firstOrNull()?.first ?: "Standard"
-                viewModel.addToCart(p.id, color, size, 1)
-                onShowSnackbar("${p.title} added to bag.")
-            }
-        )
+            // 4. Deal of the Day (With live ticking countdown and claims progress bar)
+            DealOfTheDaySection(products, navController)
 
-        // 6. Promotional Banners
-        PromotionalBannersSection(navController)
+            // 5. Trending Products
+            ProductsGridSection(
+                title = "Trending Now",
+                products = products.filter { it.isFeatured }.take(8),
+                wishlistItems = wishlistItems.map { it.productId },
+                navController = navController,
+                onToggleWishlist = { viewModel.toggleWishlist(it) },
+                onAddToCart = { p ->
+                    val size = p.getSizesList().firstOrNull()?.first ?: "M"
+                    val color = p.getColorsList().firstOrNull()?.first ?: "Standard"
+                    viewModel.addToCart(p.id, color, size, 1)
+                    onShowSnackbar("${p.title} added to bag.")
+                }
+            )
 
-        // 7. New Arrivals
-        ProductsGridSection(
-            title = "New Arrivals",
-            products = products.filter { it.isNewArrival }.take(4),
-            wishlistItems = wishlistItems.map { it.productId },
-            navController = navController,
-            onToggleWishlist = { viewModel.toggleWishlist(it) },
-            onAddToCart = { p ->
-                val size = p.getSizesList().firstOrNull()?.first ?: "M"
-                val color = p.getColorsList().firstOrNull()?.first ?: "Standard"
-                viewModel.addToCart(p.id, color, size, 1)
-                onShowSnackbar("${p.title} added to bag.")
-            }
-        )
+            // 6. Promotional Banners
+            PromotionalBannersSection(navController)
 
-        // 8. Brand Features Strip
-        BrandFeaturesStrip()
+            // 7. New Arrivals
+            ProductsGridSection(
+                title = "New Arrivals",
+                products = products.filter { it.isNewArrival }.take(4),
+                wishlistItems = wishlistItems.map { it.productId },
+                navController = navController,
+                onToggleWishlist = { viewModel.toggleWishlist(it) },
+                onAddToCart = { p ->
+                    val size = p.getSizesList().firstOrNull()?.first ?: "M"
+                    val color = p.getColorsList().firstOrNull()?.first ?: "Standard"
+                    viewModel.addToCart(p.id, color, size, 1)
+                    onShowSnackbar("${p.title} added to bag.")
+                }
+            )
 
-        // 9. Customer Testimonials
-        TestimonialsSection()
+            // 8. Brand Features Strip
+            BrandFeaturesStrip()
 
-        // 10. Newsletter Subscription
-        NewsletterSection(onShowSnackbar)
+            // 9. Customer Testimonials
+            TestimonialsSection()
 
-        // 11. Footer
-        FooterSection(navController)
+            // 10. Newsletter Subscription
+            NewsletterSection(onShowSnackbar)
+
+            // 11. Footer
+            FooterSection(navController)
+        }
     }
 }
 

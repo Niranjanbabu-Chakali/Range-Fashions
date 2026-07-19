@@ -371,6 +371,17 @@ fun MainEcommerceScaffold() {
                 val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
                 OrderSuccessPage(orderId, navController, viewModel)
             }
+            composable(
+                route = "order_tracking?orderId={orderId}",
+                arguments = listOf(navArgument("orderId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                })
+            ) { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId")
+                OrderTrackingScreen(navController, viewModel, orderId, showSnackbar)
+            }
             composable("wishlist") {
                 WishlistScreen(navController, viewModel, showSnackbar)
             }

@@ -29,6 +29,7 @@ import coil.compose.AsyncImage
 import com.example.data.Product
 import com.example.ui.MainViewModel
 import com.example.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,9 +58,14 @@ fun CategoryScreen(
     val sheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
 
+    var isScreenLoading by remember { mutableStateOf(true) }
+
     // Reset filters when switching category
     LaunchedEffect(categoryName) {
+        isScreenLoading = true
         viewModel.clearAllFilters()
+        delay(1000)
+        isScreenLoading = false
     }
 
     // Filter products
@@ -265,7 +271,9 @@ fun CategoryScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (filteredProducts.isEmpty()) {
+            if (isScreenLoading) {
+                CategoryScreenSkeleton(isListView = isListView)
+            } else if (filteredProducts.isEmpty()) {
                 // Empty State
                 Column(
                     modifier = Modifier
